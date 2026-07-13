@@ -43,6 +43,10 @@ STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
 cp -r "$ROOT/build/." "$STAGE/"
+
+# fill in the real origin for og/social tags (subdomain: lowercase, . and _ become -)
+SUBDOMAIN=$(echo "${OWNER}-${NAME}" | tr '[:upper:]._' '[:lower:]--')
+sed -i "s|__PUBLIC_URL__|https://${SUBDOMAIN}.hf.space|g" "$STAGE/index.html"
 cat > "$STAGE/README.md" <<'EOF'
 ---
 title: knitpick
