@@ -26,11 +26,19 @@ photo blobs.
 
 - `projects`: id, name, accent, status (`active | finished | frozen`), yarn/needle
   fields, createdAt, updatedAt (bump on any activity — drives the continue card)
-- `counters`: id, projectId, label, value, target?, linkTo? (repeat counter that
-  auto-resets at target and increments the linked counter)
+- `counters`: id, projectId, label, value, isMain, createdAt, target?, linkTo?
+  (repeat counter that auto-resets at target and increments the linked counter —
+  target/linkTo not wired up yet). Exactly one counter per project has
+  `isMain: true`; it's the one shown on the project overview and gets promoted
+  automatically when the current main counter is deleted.
+- `counterEvents`: id, counterId, projectId, value (value after the update),
+  createdAt — one row per increment/decrement, powers the per-counter timestamped
+  log. Never mutated, only appended/deleted with its counter.
 - `files`: id, projectId, kind (`pdf | photo`), blob, thumbnail?, lastViewedPage?
+  (one `pdf` file per project; rendered via a plain `<iframe>` blob URL — no pdf.js
+  yet, so `lastViewedPage` is unused)
 - `notes`: id, projectId, text, photoId?, createdAt (progress log: notes and photos
-  interleave on one timeline)
+  interleave on one timeline — photo attachment via `photoId` not wired up yet)
 
 Schema changes go through Dexie versioned migrations — never mutate a version
 in place once committed.
@@ -38,11 +46,15 @@ in place once committed.
 ## File layout
 
 ```
-src/lib/db.ts            # Dexie schema + typed table interfaces
-src/lib/queries.ts       # reusable liveQuery helpers
-src/lib/components/      # shared UI components
-src/routes/              # + (home: continue card + project list)
-src/routes/project/[id]/ # project view (counter, pattern, log)
+src/lib/db.ts                                    # Dexie schema + typed table interfaces
+src/lib/queries.ts                                # reusable liveQuery helpers
+src/lib/components/                               # shared UI components
+src/routes/                                       # + (home: continue card + project list)
+src/routes/project/[id]/                          # project overview: main counter,
+                                                   # counter list, edit form, status/delete
+src/routes/project/[id]/counter/[counterId]/      # full-bleed counter screen + its log
+src/routes/project/[id]/pattern/                  # pattern pdf upload/view
+src/routes/project/[id]/log/                      # notes log
 ```
 
 ## Style

@@ -1,9 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { deleteProject, projectById, updateProject } from '$lib/queries';
+	import {
+		countersByProject,
+		createCounter,
+		deleteCounter,
+		deleteProject,
+		projectById,
+		setMainCounter,
+		updateProject
+	} from '$lib/queries';
 
 	const project = projectById(page.params.id!);
+	const counters = countersByProject(page.params.id!);
+	const mainCounter = $derived($counters?.find((c) => c.isMain));
+	const otherCounters = $derived($counters?.filter((c) => c.id !== mainCounter?.id) ?? []);
 
 	let name = $state('');
 	let yarn = $state('');
@@ -39,6 +50,17 @@
 		await deleteProject(page.params.id!);
 		await goto('/');
 	}
+
+	async function addCounter() {
+		const label = prompt('counter name', 'row');
+		if (label === null) return;
+		await createCounter(page.params.id!, label.trim() || 'row');
+	}
+
+	async function removeCounter(id: string, label: string) {
+		if (!confirm(`delete "${label}"? this cannot be undone`)) return;
+		await deleteCounter(id);
+	}
 </script>
 
 {#if $project}
@@ -50,6 +72,44 @@
 			<span class="status">{$project.status === 'finished' ? 'finished 🎉' : 'frozen'}</span>
 		{/if}
 	</header>
+
+	<section class="counters">
+		{#if mainCounter}
+			<a class="counter-main" href="/project/{page.params.id}/counter/{mainCounter.id}">
+				<span class="counter-label">{mainCounter.label}</span>
+				<span class="counter-value">{mainCounter.value}</span>
+			</a>
+		{/if}
+
+		{#if otherCounters.length > 0}
+			<ul class="counter-list">
+				{#each otherCounters as counter (counter.id)}
+					<li>
+						<a class="counter-row" href="/project/{page.params.id}/counter/{counter.id}">
+							<span class="counter-row-label">{counter.label}</span>
+							<span class="counter-row-value">{counter.value}</span>
+						</a>
+						<span class="row-actions">
+							<button
+								class="ghost-small"
+								onclick={() => setMainCounter(page.params.id!, counter.id)}>set main</button
+							>
+							<button class="ghost-small danger" onclick={() => removeCounter(counter.id, counter.label)}
+								>delete</button
+							>
+						</span>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+
+		<button class="btn ghost" onclick={addCounter}>add counter</button>
+	</section>
+
+	<div class="links">
+		<a class="btn ghost" href="/project/{page.params.id}/pattern">pattern</a>
+		<a class="btn ghost" href="/project/{page.params.id}/log">log</a>
+	</div>
 
 	<form onsubmit={save}>
 		<div>
@@ -112,6 +172,100 @@
 		font-size: 14px;
 		font-weight: 600;
 		opacity: 0.8;
+	}
+
+	.counters {
+		margin-bottom: 24px;
+	}
+
+	.counter-main {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 24px 16px;
+		border-radius: var(--radius);
+		background: var(--ink);
+		color: var(--bg);
+		text-decoration: none;
+		margin-bottom: 12px;
+	}
+
+	.counter-label {
+		font-size: 14px;
+		font-weight: 600;
+		opacity: 0.8;
+	}
+
+	.counter-value {
+		font-family: var(--font-display);
+		font-size: 64px;
+		letter-spacing: -0.02em;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.counter-list {
+		list-style: none;
+	}
+
+	.counter-list li {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 12px 0;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.counter-row {
+		display: flex;
+		flex: 1;
+		justify-content: space-between;
+		align-items: baseline;
+		text-decoration: none;
+		min-width: 0;
+	}
+
+	.counter-row-label {
+		font-weight: 600;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.counter-row-value {
+		font-family: var(--font-display);
+		font-size: 20px;
+		font-variant-numeric: tabular-nums;
+		flex-shrink: 0;
+		margin-left: 8px;
+	}
+
+	.row-actions {
+		display: flex;
+		gap: 4px;
+		flex-shrink: 0;
+	}
+
+	.ghost-small {
+		min-height: 32px;
+		padding: 4px 8px;
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--muted);
+	}
+
+	.ghost-small.danger {
+		color: var(--red);
+	}
+
+	.links {
+		display: flex;
+		gap: 8px;
+		margin-bottom: 24px;
+	}
+
+	.links .btn {
+		flex: 1;
 	}
 
 	form {

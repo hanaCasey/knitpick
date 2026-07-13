@@ -19,8 +19,18 @@ export interface Counter {
 	projectId: string;
 	label: string;
 	value: number;
+	isMain: boolean;
+	createdAt: number;
 	target?: number;
 	linkTo?: string; // repeat counter: auto-resets at target, increments linked counter
+}
+
+export interface CounterEvent {
+	id: string;
+	counterId: string;
+	projectId: string;
+	value: number; // counter value after this update
+	createdAt: number;
 }
 
 export interface FileEntry {
@@ -43,6 +53,7 @@ export interface Note {
 export const db = new Dexie('knitpick') as Dexie & {
 	projects: EntityTable<Project, 'id'>;
 	counters: EntityTable<Counter, 'id'>;
+	counterEvents: EntityTable<CounterEvent, 'id'>;
 	files: EntityTable<FileEntry, 'id'>;
 	notes: EntityTable<Note, 'id'>;
 };
@@ -53,3 +64,21 @@ db.version(1).stores({
 	files: 'id, projectId, kind',
 	notes: 'id, projectId, createdAt'
 });
+
+db.version(2)
+	.stores({
+		projects: 'id, status, updatedAt',
+		counters: 'id, projectId, isMain',
+		files: 'id, projectId, kind',
+		notes: 'id, projectId, createdAt',
+		counterEvents: 'id, counterId, projectId, createdAt'
+	})
+	.upgrade(async (tx) => {
+		await tx
+			.table('counters')
+			.toCollection()
+			.modify((c) => {
+				c.isMain ??= false;
+				c.createdAt ??= Date.now();
+			});
+	});
