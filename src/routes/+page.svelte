@@ -83,8 +83,14 @@
 	{/if}
 
 	{#if $projects.length === 0}
-		<p class="empty">nothing on the needles yet</p>
-		<a class="btn" href="/new">add project <span class="arrow" aria-hidden="true">→</span></a>
+		<div class="welcome">
+			<h1>welcome</h1>
+			<p>
+				knitpick keeps your patterns, row counters and progress notes together — all stored right
+				on this device. cast on something and it'll show up here.
+			</p>
+			<a class="btn" href="/new">add your first project <span class="arrow" aria-hidden="true">→</span></a>
+		</div>
 	{/if}
 {/if}
 
@@ -254,5 +260,16 @@
 	.empty {
 		color: var(--muted);
 		padding: 48px 0 16px;
+	}
+
+	.welcome {
+		max-width: 480px;
+		padding-top: 24px;
+	}
+
+	.welcome p {
+		color: var(--muted);
+		line-height: 1.5;
+		margin: 0 0 32px;
 	}
 </style>
