@@ -6,7 +6,6 @@
 		createCounter,
 		deleteCounter,
 		projectById,
-		setCurrentProject,
 		setMainCounter
 	} from '$lib/queries';
 
@@ -28,12 +27,6 @@
 </script>
 
 {#if $project}
-	{#if $project.status === 'active' && !$project.isCurrent}
-		<button class="btn make-current" onclick={() => setCurrentProject(page.params.id!)}
-			>make current project</button
-		>
-	{/if}
-
 	<section class="counters">
 		{#if mainCounter}
 			<a
@@ -181,10 +174,5 @@
 
 	.ghost-small.danger {
 		color: var(--red);
-	}
-
-	.make-current {
-		max-width: 320px;
-		margin-bottom: 24px;
 	}
 </style>

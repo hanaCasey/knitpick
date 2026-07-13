@@ -108,15 +108,12 @@
 		transform: rotate(-45deg);
 	}
 
-	/* the page you're currently on — outlined instead of filled, no arrow
-	   (it doesn't lead anywhere new) */
+	/* the page you're currently on — outlined instead of filled. the arrow
+	   stays (just doesn't rotate) so the card doesn't change width when it
+	   becomes active */
 	.chip[aria-current='page'] {
 		background: transparent;
 		color: var(--ink);
-	}
-
-	.chip[aria-current='page'] .arrow {
-		display: none;
 	}
 
 	/* narrow screens: 4 equal columns so all cards stay on one line instead

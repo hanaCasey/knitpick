@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import AccentPicker from '$lib/components/AccentPicker.svelte';
-	import { deleteProject, projectById, updateProject } from '$lib/queries';
+	import { deleteProject, projectById, setCurrentProject, updateProject } from '$lib/queries';
 
 	const project = projectById(page.params.id!);
 
@@ -46,6 +46,12 @@
 </script>
 
 {#if $project}
+	{#if $project.status === 'active' && !$project.isCurrent}
+		<button class="btn make-current" onclick={() => setCurrentProject(page.params.id!)}
+			>make current project</button
+		>
+	{/if}
+
 	<form onsubmit={save}>
 		<div>
 			<label for="name">name</label>
@@ -108,5 +114,10 @@
 
 	.danger {
 		color: var(--red);
+	}
+
+	.make-current {
+		max-width: 320px;
+		margin-bottom: 24px;
 	}
 </style>
