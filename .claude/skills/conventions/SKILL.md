@@ -57,10 +57,13 @@ src/lib/queries.ts                                # reusable liveQuery helpers
 src/lib/components/                               # shared UI components
 src/routes/                                       # + (home: continue card + project list)
 src/routes/project/[id]/                          # project overview: main counter,
-                                                   # counter list, edit form, status/delete
+                                                   # counter list, links to the sections below
 src/routes/project/[id]/counter/[counterId]/      # full-bleed counter screen + its log
 src/routes/project/[id]/pattern/                  # pattern pdf upload/view
 src/routes/project/[id]/log/                      # notes log
+src/routes/project/[id]/edit/                     # project details form, status, delete
+src/routes/project/[id]/+layout.svelte            # shared header: project name (links
+                                                   # back to overview) + current-section label
 ```
 
 ## Style

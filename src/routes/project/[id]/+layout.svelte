@@ -1,26 +1,23 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { accentVars } from '$lib/accents';
-	import { ACCENTS, projectList } from '$lib/queries';
+	import { projectList } from '$lib/queries';
 
 	let { children } = $props();
 
 	const projects = projectList();
 	const project = $derived($projects?.find((p) => p.id === page.params.id));
 
-	// each tab gets a distinct accent, borrowed from the project's own colour cycle
-	const tabs = $derived.by(() => {
-		if (!project) return [];
-		const others = ACCENTS.filter((a) => a !== project.accent);
-		return [
-			{ label: 'counters', href: `/project/${project.id}`, accent: project.accent },
-			{ label: 'pattern', href: `/project/${project.id}/pattern`, accent: others[0] },
-			{ label: 'notes', href: `/project/${project.id}/log`, accent: others[1] }
-		];
-	});
-
+	const overviewHref = $derived(`/project/${page.params.id}`);
+	const onOverview = $derived(page.url.pathname === overviewHref);
 	// the counter screen stays full-bleed: its back link is the way out
 	const onCounter = $derived(page.url.pathname.includes('/counter/'));
+
+	const sectionLabel = $derived.by(() => {
+		if (page.url.pathname === `${overviewHref}/pattern`) return 'pattern';
+		if (page.url.pathname === `${overviewHref}/log`) return 'notes';
+		if (page.url.pathname === `${overviewHref}/edit`) return 'edit details';
+		return 'counters';
+	});
 
 	const statusLabel = $derived.by(() => {
 		if (!project) return null;
@@ -33,21 +30,17 @@
 
 {#if project && !onCounter}
 	<header class="project-header">
-		<h1>{project.name}</h1>
+		<h1 class="title">
+			{#if onOverview}
+				{project.name}
+			{:else}
+				<a href={overviewHref}>{project.name}</a>
+			{/if}
+		</h1>
 		{#if statusLabel}
 			<p class="status">{statusLabel}</p>
 		{/if}
-		<nav class="project-nav" aria-label="project sections">
-			{#each tabs as tab (tab.href)}
-				<a
-					href={tab.href}
-					style={accentVars(tab.accent)}
-					aria-current={page.url.pathname === tab.href ? 'page' : undefined}
-				>
-					{tab.label}
-				</a>
-			{/each}
-		</nav>
+		<h2 class="section">{sectionLabel}</h2>
 	</header>
 {/if}
 
@@ -62,8 +55,12 @@
 		margin-bottom: 24px;
 	}
 
-	.project-header h1 {
+	.title {
 		font-size: clamp(40px, 5vw, 64px);
+	}
+
+	.title a {
+		text-decoration: none;
 	}
 
 	.status {
@@ -73,34 +70,8 @@
 		color: var(--muted);
 	}
 
-	.project-nav {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 8px;
-		max-width: 480px;
-		margin-top: 16px;
-	}
-
-	.project-nav a {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 48px;
-		padding: 8px 4px;
-		border: 2px solid transparent;
-		border-radius: var(--radius);
-		background: var(--accent);
-		color: var(--on-accent);
-		text-decoration: none;
-		font-family: var(--font-display);
-		font-size: 14px;
-		letter-spacing: -0.02em;
-	}
-
-	/* units-style current state: outlined, no fill — same as the sidebar */
-	.project-nav a[aria-current='page'] {
-		background: transparent;
-		border-color: var(--ink);
-		color: var(--ink);
+	.section {
+		margin-top: 12px;
+		font-size: 18px;
 	}
 </style>
