@@ -44,9 +44,10 @@ trap 'rm -rf "$STAGE"' EXIT
 
 cp -r "$ROOT/build/." "$STAGE/"
 
-# fill in the real origin for og/social tags (subdomain: lowercase, . and _ become -)
+# fill in the real origin for og/social tags (subdomain: lowercase, . and _ become -;
+# static spaces serve from *.static.hf.space)
 SUBDOMAIN=$(echo "${OWNER}-${NAME}" | tr '[:upper:]._' '[:lower:]--')
-sed -i "s|__PUBLIC_URL__|https://${SUBDOMAIN}.hf.space|g" "$STAGE/index.html"
+sed -i "s|__PUBLIC_URL__|https://${SUBDOMAIN}.static.hf.space|g" "$STAGE/index.html"
 cat > "$STAGE/README.md" <<'EOF'
 ---
 title: knitpick
@@ -68,4 +69,4 @@ git -c user.name=deploy -c user.email=deploy@local add -A
 git -c user.name=deploy -c user.email=deploy@local commit -qm "deploy"
 git push -q --force "https://$USERNAME:$HF_TOKEN@huggingface.co/spaces/$SPACE" main
 
-echo "✓ live at https://${OWNER}-${NAME}.hf.space"
+echo "✓ live at https://${SUBDOMAIN}.static.hf.space"
