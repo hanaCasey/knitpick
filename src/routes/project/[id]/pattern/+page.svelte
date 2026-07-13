@@ -35,7 +35,6 @@
 </script>
 
 {#if $project}
-	<a class="btn ghost back" href="/project/{projectId}">← {$project.name}</a>
 	<h1>pattern</h1>
 
 	{#if url}
@@ -49,7 +48,7 @@
 		</div>
 	{:else}
 		<p class="empty">no pattern uploaded yet</p>
-		<label class="btn red file">
+		<label class="btn file">
 			add pattern pdf
 			<input type="file" accept="application/pdf" onchange={upload} />
 		</label>
@@ -57,18 +56,15 @@
 {/if}
 
 <style>
-	.back {
-		margin-bottom: 12px;
-	}
-
 	h1 {
-		font-size: 28px;
-		margin-bottom: 16px;
+		font-size: clamp(36px, 5vw, 56px);
+		margin: 16px 0 24px;
 	}
 
 	.viewer {
 		width: 100%;
-		height: 70vh;
+		height: 75vh;
+		height: 75dvh; /* mobile browser chrome shrinks vh */
 		border: 1px solid var(--line);
 		border-radius: var(--radius);
 		margin-bottom: 16px;
@@ -76,17 +72,12 @@
 
 	.empty {
 		color: var(--muted);
-		padding: 32px 0;
-		text-align: center;
+		padding: 32px 0 24px;
 	}
 
 	.actions {
 		display: flex;
 		gap: 8px;
-	}
-
-	.actions .btn {
-		flex: 1;
 	}
 
 	.file {

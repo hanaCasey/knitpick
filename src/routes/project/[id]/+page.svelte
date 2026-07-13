@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { accentVars } from '$lib/accents';
+	import AccentPicker from '$lib/components/AccentPicker.svelte';
 	import {
 		countersByProject,
 		createCounter,
 		deleteCounter,
 		deleteProject,
 		projectById,
+		setCurrentProject,
 		setMainCounter,
 		updateProject
 	} from '$lib/queries';
@@ -19,7 +22,9 @@
 	let name = $state('');
 	let yarn = $state('');
 	let needles = $state('');
+	let accent = $state('');
 	let loaded = $state(false);
+	let showDetails = $state(false);
 
 	$effect(() => {
 		const p = $project;
@@ -27,6 +32,7 @@
 			name = p.name;
 			yarn = p.yarn;
 			needles = p.needles;
+			accent = p.accent;
 			loaded = true;
 		}
 	});
@@ -36,9 +42,10 @@
 		await updateProject(page.params.id!, {
 			name: name.trim(),
 			yarn: yarn.trim(),
-			needles: needles.trim()
+			needles: needles.trim(),
+			accent
 		});
-		await goto('/');
+		showDetails = false;
 	}
 
 	async function setStatus(status: 'active' | 'finished' | 'frozen') {
@@ -64,38 +71,45 @@
 </script>
 
 {#if $project}
-	<a class="btn ghost back" href="/">← home</a>
-
-	<header class="band {$project.accent}">
+	<header class="head">
 		<h1>{$project.name}</h1>
 		{#if $project.status !== 'active'}
-			<span class="status">{$project.status === 'finished' ? 'finished 🎉' : 'frozen'}</span>
+			<p class="status">{$project.status === 'finished' ? 'finished 🎉' : 'frozen'}</p>
+		{:else if $project.isCurrent}
+			<p class="status">current project</p>
 		{/if}
 	</header>
 
 	<section class="counters">
 		{#if mainCounter}
-			<a class="counter-main" href="/project/{page.params.id}/counter/{mainCounter.id}">
-				<span class="counter-label">{mainCounter.label}</span>
+			<a
+				class="counter-main"
+				style={accentVars($project.accent)}
+				href="/project/{page.params.id}/counter/{mainCounter.id}"
+			>
+				<span class="cm-head">
+					<span class="counter-label">{mainCounter.label}</span>
+					<span class="arrow" aria-hidden="true">→</span>
+				</span>
 				<span class="counter-value">{mainCounter.value}</span>
 			</a>
 		{/if}
 
 		{#if otherCounters.length > 0}
-			<ul class="counter-list">
+			<ul class="counter-grid">
 				{#each otherCounters as counter (counter.id)}
-					<li>
-						<a class="counter-row" href="/project/{page.params.id}/counter/{counter.id}">
-							<span class="counter-row-label">{counter.label}</span>
-							<span class="counter-row-value">{counter.value}</span>
+					<li class="counter-card">
+						<a href="/project/{page.params.id}/counter/{counter.id}">
+							<span class="cc-label">{counter.label}</span>
+							<span class="cc-value">{counter.value}</span>
 						</a>
 						<span class="row-actions">
-							<button
-								class="ghost-small"
-								onclick={() => setMainCounter(page.params.id!, counter.id)}>set main</button
+							<button class="ghost-small" onclick={() => setMainCounter(page.params.id!, counter.id)}
+								>set main</button
 							>
-							<button class="ghost-small danger" onclick={() => removeCounter(counter.id, counter.label)}
-								>delete</button
+							<button
+								class="ghost-small danger"
+								onclick={() => removeCounter(counter.id, counter.label)}>delete</button
 							>
 						</span>
 					</li>
@@ -106,75 +120,68 @@
 		<button class="btn ghost" onclick={addCounter}>add counter</button>
 	</section>
 
-	<div class="links">
-		<a class="btn ghost" href="/project/{page.params.id}/pattern">pattern</a>
-		<a class="btn ghost" href="/project/{page.params.id}/log">log</a>
-	</div>
+	<section class="details">
+		<button class="btn ghost" onclick={() => (showDetails = !showDetails)}>
+			{showDetails ? 'hide details' : 'edit details'}
+		</button>
 
-	<form onsubmit={save}>
-		<div>
-			<label for="name">name</label>
-			<input id="name" bind:value={name} required autocomplete="off" />
-		</div>
-		<div>
-			<label for="yarn">yarn</label>
-			<input id="yarn" bind:value={yarn} autocomplete="off" />
-		</div>
-		<div>
-			<label for="needles">needles</label>
-			<input id="needles" bind:value={needles} autocomplete="off" />
-		</div>
-		<button class="btn" type="submit">save</button>
-	</form>
+		{#if showDetails}
+			<form onsubmit={save}>
+				<div>
+					<label for="name">name</label>
+					<input id="name" bind:value={name} required autocomplete="off" />
+				</div>
+				<div>
+					<label for="yarn">yarn</label>
+					<input id="yarn" bind:value={yarn} autocomplete="off" />
+				</div>
+				<div>
+					<label for="needles">needles</label>
+					<input id="needles" bind:value={needles} autocomplete="off" />
+				</div>
+				<div>
+					<span class="field-label">colour</span>
+					<AccentPicker bind:value={accent} />
+				</div>
+				<button class="btn" type="submit">save</button>
+			</form>
 
-	<div class="actions">
-		{#if $project.status === 'active'}
-			<button class="btn ghost" onclick={() => setStatus('finished')}>mark finished</button>
-			<button class="btn ghost" onclick={() => setStatus('frozen')}>freeze</button>
-		{:else}
-			<button class="btn ghost" onclick={() => setStatus('active')}>reactivate</button>
+			<div class="actions">
+				{#if $project.status === 'active'}
+					{#if !$project.isCurrent}
+						<button class="btn ghost" onclick={() => setCurrentProject(page.params.id!)}
+							>make current</button
+						>
+					{/if}
+					<button class="btn ghost" onclick={() => setStatus('finished')}>mark finished</button>
+					<button class="btn ghost" onclick={() => setStatus('frozen')}>freeze</button>
+				{:else}
+					<button class="btn ghost" onclick={() => setStatus('active')}>reactivate</button>
+				{/if}
+				<button class="btn ghost danger" onclick={remove}>delete project</button>
+			</div>
 		{/if}
-		<button class="btn ghost danger" onclick={remove}>delete project</button>
-	</div>
+	</section>
 {/if}
 
 <style>
-	.back {
-		margin-bottom: 12px;
+	.head {
+		margin: 16px 0 24px;
 	}
 
-	.band {
-		padding: 32px 16px;
-		border-radius: var(--radius);
-		margin-bottom: 24px;
-	}
-
-	.band h1 {
-		font-size: 32px;
-	}
-
-	.band.red {
-		background: var(--red);
-		color: var(--on-red);
-	}
-
-	.band.pink {
-		background: var(--pink);
-		color: var(--on-pink);
-	}
-
-	.band.orange {
-		background: var(--orange);
-		color: var(--on-orange);
+	.head h1 {
+		font-size: clamp(40px, 5vw, 64px);
 	}
 
 	.status {
+		margin-top: 4px;
 		font-size: 14px;
 		font-weight: 600;
-		opacity: 0.8;
+		color: var(--muted);
 	}
 
 	.counters {
+		max-width: 820px;
 		margin-bottom: 24px;
 	}
 
@@ -182,12 +189,29 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-		padding: 24px 16px;
+		padding: 24px 20px;
 		border-radius: var(--radius);
-		background: var(--ink);
-		color: var(--bg);
+		background: var(--accent);
+		color: var(--on-accent);
 		text-decoration: none;
 		margin-bottom: 12px;
+	}
+
+	.cm-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.arrow {
+		font-family: var(--font-display);
+		font-size: 24px;
+		transition: transform 0.7s var(--ease);
+	}
+
+	.counter-main:hover .arrow {
+		transform: rotate(-45deg);
 	}
 
 	.counter-label {
@@ -198,57 +222,62 @@
 
 	.counter-value {
 		font-family: var(--font-display);
-		font-size: 64px;
+		font-size: clamp(64px, 6vw, 96px);
 		letter-spacing: -0.02em;
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 	}
 
-	.counter-list {
+	.counter-grid {
 		list-style: none;
+		display: grid;
+		/* 140px keeps two columns on small phones */
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: 12px;
+		margin-bottom: 12px;
 	}
 
-	.counter-list li {
+	.counter-card {
 		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 12px 0;
-		border-bottom: 1px solid var(--line);
-	}
-
-	.counter-row {
-		display: flex;
-		flex: 1;
+		flex-direction: column;
 		justify-content: space-between;
-		align-items: baseline;
-		text-decoration: none;
-		min-width: 0;
+		gap: 12px;
+		padding: 12px;
+		border: 2px solid var(--ink);
+		border-radius: var(--radius);
 	}
 
-	.counter-row-label {
+	.counter-card a {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		text-decoration: none;
+	}
+
+	.cc-label {
+		font-size: 13px;
 		font-weight: 600;
+		color: var(--muted);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	.counter-row-value {
+	.cc-value {
 		font-family: var(--font-display);
-		font-size: 20px;
-		font-variant-numeric: tabular-nums;
-		flex-shrink: 0;
-		margin-left: 8px;
+		font-size: 32px;
+		letter-spacing: -0.02em;
+		line-height: 1;
 	}
 
 	.row-actions {
 		display: flex;
 		gap: 4px;
-		flex-shrink: 0;
 	}
 
 	.ghost-small {
-		min-height: 32px;
-		padding: 4px 8px;
+		min-height: 40px;
+		padding: 4px 10px;
 		font-size: 13px;
 		font-weight: 600;
 		color: var(--muted);
@@ -258,30 +287,36 @@
 		color: var(--red);
 	}
 
-	.links {
-		display: flex;
-		gap: 8px;
-		margin-bottom: 24px;
-	}
-
-	.links .btn {
-		flex: 1;
+	.details {
+		border-top: 1px solid var(--line);
+		padding-top: 16px;
+		max-width: 820px;
 	}
 
 	form {
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
+		max-width: 520px;
+		margin-top: 16px;
 	}
 
 	form .btn {
 		margin-top: 8px;
+		align-self: flex-start;
+	}
+
+	.field-label {
+		display: block;
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--muted);
+		margin-bottom: 8px;
 	}
 
 	.actions {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: center;
 		gap: 8px;
 		margin-top: 24px;
 	}

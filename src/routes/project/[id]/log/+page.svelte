@@ -32,12 +32,11 @@
 </script>
 
 {#if $project}
-	<a class="btn ghost back" href="/project/{projectId}">← {$project.name}</a>
-	<h1>log</h1>
+	<h1>notes</h1>
 
 	<form onsubmit={submit}>
 		<textarea bind:value={text} placeholder="what happened?" rows="3"></textarea>
-		<button class="btn red" type="submit">add note</button>
+		<button class="btn" type="submit">add note</button>
 	</form>
 
 	{#if $notes && $notes.length > 0}
@@ -58,20 +57,22 @@
 {/if}
 
 <style>
-	.back {
-		margin-bottom: 12px;
-	}
-
 	h1 {
-		font-size: 28px;
-		margin-bottom: 16px;
+		font-size: clamp(36px, 5vw, 56px);
+		margin: 16px 0 24px;
 	}
 
 	form {
 		display: flex;
 		flex-direction: column;
+		align-items: flex-start;
 		gap: 12px;
 		margin-bottom: 24px;
+		max-width: 720px;
+	}
+
+	textarea {
+		align-self: stretch;
 	}
 
 	textarea {
@@ -83,6 +84,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
+		max-width: 720px;
 	}
 
 	.notes li {
@@ -103,8 +105,8 @@
 	}
 
 	.ghost-small {
-		min-height: 32px;
-		padding: 4px 8px;
+		min-height: 40px;
+		padding: 4px 10px;
 		font-size: 13px;
 		font-weight: 600;
 		color: var(--muted);

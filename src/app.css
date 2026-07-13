@@ -1,36 +1,36 @@
 @import '@fontsource/archivo-black';
 
 :root {
-	color-scheme: light dark;
+	color-scheme: light;
 
-	--bg: #ffffff;
+	--bg: #f4e9e1; /* warm cream canvas, units.gr-style */
 	--ink: #141414;
 	--muted: #6b6b6b;
-	--line: #e4e2de;
+	--line: #e0d2c6;
 
-	--red: #e5322c;
-	--pink: #f04e98;
-	--orange: #ff7a00;
-
-	/* text on accent blocks — fixed in both themes */
-	--on-red: #ffffff;
-	--on-pink: #141414;
-	--on-orange: #141414;
+	--red: #df5539;
+	--pink: #f496d1;
+	--green: #32a255;
+	--blush: #efb6dc;
+	--orange: #e36025;
+	--sage: #7da87a;
+	--cobalt: #115eae;
+	--petal: #f4cde4;
+	--moss: #668d57;
+	--navy: #1a2d70;
 
 	--font-display: 'Archivo Black', system-ui, sans-serif;
 	--font-body: system-ui, -apple-system, sans-serif;
 
-	--radius: 4px;
+	--radius: 10px; /* blocks and cards */
+	--radius-pill: 999px; /* buttons */
+	--sidebar-w: clamp(200px, 19vw, 280px);
+	--ease: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--bg: #121212;
-		--ink: #f2f0ec;
-		--muted: #9a9a9a;
-		--line: #2c2c2c;
-	}
-}
+/* accent blocks: components receive --accent/--on-accent/--on-accent-hover as an
+   inline style via accentVars() in src/lib/accents.ts (the palette's source of
+   truth — the tokens above are kept in sync for direct use like .btn/.danger). */
 
 * {
 	box-sizing: border-box;
@@ -58,6 +58,12 @@ a {
 	color: inherit;
 }
 
+/* no 300ms double-tap-zoom delay — rapid taps on counters must register each tap */
+a,
+button {
+	touch-action: manipulation;
+}
+
 /* buttons: chonky slabs of color, or ghost for low emphasis */
 button {
 	font: inherit;
@@ -68,34 +74,28 @@ button {
 }
 
 .btn {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 100%;
+	gap: 12px;
 	min-height: 56px;
-	padding: 12px 24px;
-	border-radius: var(--radius);
+	padding: 14px 30px;
+	border-radius: var(--radius-pill);
 	font-family: var(--font-display);
 	font-size: 18px;
 	letter-spacing: -0.02em;
 	text-decoration: none;
-	background: var(--ink);
-	color: var(--bg);
-}
-
-.btn.red {
+	/* never ink/black — buttons are always a slab of accent color */
 	background: var(--red);
-	color: var(--on-red);
+	color: #ffffff;
 }
 
-.btn.pink {
-	background: var(--pink);
-	color: var(--on-pink);
+.btn .arrow {
+	transition: transform 0.7s var(--ease);
 }
 
-.btn.orange {
-	background: var(--orange);
-	color: var(--on-orange);
+.btn:hover .arrow {
+	transform: rotate(-45deg);
 }
 
 .btn.ghost {
@@ -103,7 +103,7 @@ button {
 	background: none;
 	color: var(--ink);
 	width: auto;
-	min-height: 44px;
+	min-height: 48px;
 	white-space: nowrap;
 	font-family: var(--font-body);
 	font-weight: 600;

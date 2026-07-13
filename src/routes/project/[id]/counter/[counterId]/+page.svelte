@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { accentVars } from '$lib/accents';
 	import {
 		counterById,
 		decrementCounter,
@@ -53,7 +54,7 @@
 		</span>
 	</div>
 
-	<button class="tap {$project.accent}" onclick={() => incrementCounter(counterId)}>
+	<button class="tap" style={accentVars($project.accent)} onclick={() => incrementCounter(counterId)}>
 		<span class="value">{$counter.value}</span>
 	</button>
 
@@ -79,6 +80,7 @@
 
 	.head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: baseline;
 		justify-content: space-between;
 		gap: 8px;
@@ -104,36 +106,30 @@
 		align-items: center;
 		justify-content: center;
 		width: 100%;
-		min-height: 40vh;
+		max-width: 900px;
+		min-height: 48vh;
+		min-height: 48dvh; /* mobile browser chrome shrinks vh */
 		border-radius: var(--radius);
 		margin-bottom: 12px;
+		background: var(--accent);
+		color: var(--on-accent);
+		-webkit-tap-highlight-color: transparent;
 	}
 
-	.tap.red {
-		background: var(--red);
-		color: var(--on-red);
-	}
-
-	.tap.pink {
-		background: var(--pink);
-		color: var(--on-pink);
-	}
-
-	.tap.orange {
-		background: var(--orange);
-		color: var(--on-orange);
+	.tap:active .value {
+		transform: scale(0.97);
 	}
 
 	.value {
 		font-family: var(--font-display);
-		font-size: 112px;
+		font-size: clamp(88px, 24vw, 112px);
 		letter-spacing: -0.02em;
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 	}
 
 	.undo {
-		margin: 0 auto 32px;
+		margin: 0 0 32px;
 	}
 
 	h2 {
@@ -143,6 +139,7 @@
 
 	.log {
 		list-style: none;
+		max-width: 720px;
 	}
 
 	.log li {
