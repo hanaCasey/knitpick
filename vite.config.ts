@@ -12,7 +12,12 @@ export default defineConfig({
 			},
 
 			// SPA fallback: all data is client-side (IndexedDB), no prerendered dynamic routes
-			adapter: adapter({ fallback: 'index.html' })
+			adapter: adapter({ fallback: 'index.html' }),
+
+			// relative asset paths break the SPA fallback on nested routes (/project/x
+			// resolves ./_app to /project/_app → 404) and scope the service worker to
+			// the registering page's directory — the app is served from the domain root
+			paths: { relative: false }
 		})
 	]
 });
