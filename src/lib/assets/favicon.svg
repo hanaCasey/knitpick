@@ -1,1 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="4" fill="#e5322c"/><text x="32" y="47" font-family="system-ui, sans-serif" font-size="42" font-weight="800" fill="#ffffff" text-anchor="middle">k</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#7da87a"/>
+  <!-- ears -->
+  <path d="M 162 236 L 146 104 L 252 160 Z" fill="#f4e9e1"/>
+  <path d="M 350 236 L 366 104 L 260 160 Z" fill="#f4e9e1"/>
+  <!-- head / yarn ball -->
+  <circle cx="256" cy="286" r="140" fill="#f4e9e1"/>
+  <!-- face -->
+  <circle cx="208" cy="258" r="14" fill="#141414"/>
+  <circle cx="304" cy="258" r="14" fill="#141414"/>
+  <path d="M 244 298 L 268 298 L 256 312 Z" fill="#141414"/>
+  <g stroke="#141414" stroke-width="7" stroke-linecap="round">
+    <line x1="122" y1="278" x2="178" y2="286"/>
+    <line x1="126" y1="318" x2="180" y2="310"/>
+    <line x1="390" y1="278" x2="334" y2="286"/>
+    <line x1="386" y1="318" x2="332" y2="310"/>
+  </g>
+  <!-- yarn wraps on the lower half -->
+  <clipPath id="ball"><circle cx="256" cy="286" r="140"/></clipPath>
+  <g clip-path="url(#ball)" stroke="#7da87a" stroke-width="17" fill="none">
+    <path d="M 112 336 Q 256 404 400 336"/>
+    <path d="M 124 380 Q 256 448 388 380"/>
+  </g>
+  <!-- loose tail -->
+  <path d="M 366 366 Q 430 398 474 380" stroke="#f4e9e1" stroke-width="14" fill="none" stroke-linecap="round"/>
+</svg>
