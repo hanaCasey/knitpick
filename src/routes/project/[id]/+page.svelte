@@ -71,15 +71,6 @@
 </script>
 
 {#if $project}
-	<header class="head">
-		<h1>{$project.name}</h1>
-		{#if $project.status !== 'active'}
-			<p class="status">{$project.status === 'finished' ? 'finished 🎉' : 'frozen'}</p>
-		{:else if $project.isCurrent}
-			<p class="status">current project</p>
-		{/if}
-	</header>
-
 	<section class="counters">
 		{#if mainCounter}
 			<a
@@ -165,21 +156,6 @@
 {/if}
 
 <style>
-	.head {
-		margin: 16px 0 24px;
-	}
-
-	.head h1 {
-		font-size: clamp(40px, 5vw, 64px);
-	}
-
-	.status {
-		margin-top: 4px;
-		font-size: 14px;
-		font-weight: 600;
-		color: var(--muted);
-	}
-
 	.counters {
 		max-width: 820px;
 		margin-bottom: 24px;

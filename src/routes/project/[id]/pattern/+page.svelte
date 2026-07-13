@@ -35,8 +35,6 @@
 </script>
 
 {#if $project}
-	<h1>pattern</h1>
-
 	{#if url}
 		<iframe class="viewer" src={url} title="pattern pdf"></iframe>
 		<div class="actions">
@@ -56,11 +54,6 @@
 {/if}
 
 <style>
-	h1 {
-		font-size: clamp(36px, 5vw, 56px);
-		margin: 16px 0 24px;
-	}
-
 	.viewer {
 		width: 100%;
 		height: 75vh;

@@ -32,8 +32,6 @@
 </script>
 
 {#if $project}
-	<h1>notes</h1>
-
 	<form onsubmit={submit}>
 		<textarea bind:value={text} placeholder="what happened?" rows="3"></textarea>
 		<button class="btn" type="submit">add note</button>
@@ -57,11 +55,6 @@
 {/if}
 
 <style>
-	h1 {
-		font-size: clamp(36px, 5vw, 56px);
-		margin: 16px 0 24px;
-	}
-
 	form {
 		display: flex;
 		flex-direction: column;

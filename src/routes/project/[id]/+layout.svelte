@@ -8,7 +8,7 @@
 	const projects = projectList();
 	const project = $derived($projects?.find((p) => p.id === page.params.id));
 
-	// same accent assignment as the sidebar's section boxes
+	// each tab gets a distinct accent, borrowed from the project's own colour cycle
 	const tabs = $derived.by(() => {
 		if (!project) return [];
 		const others = ACCENTS.filter((a) => a !== project.accent);
@@ -21,15 +21,23 @@
 
 	// the counter screen stays full-bleed: its back link is the way out
 	const onCounter = $derived(page.url.pathname.includes('/counter/'));
-	const onOverview = $derived(page.url.pathname === `/project/${page.params.id}`);
+
+	const statusLabel = $derived.by(() => {
+		if (!project) return null;
+		if (project.status === 'finished') return 'finished 🎉';
+		if (project.status === 'frozen') return 'frozen';
+		if (project.isCurrent) return 'current project';
+		return null;
+	});
 </script>
 
 {#if project && !onCounter}
-	<header class="project-nav">
-		{#if !onOverview}
-			<a class="context" href="/project/{project.id}">{project.name}</a>
+	<header class="project-header">
+		<h1>{project.name}</h1>
+		{#if statusLabel}
+			<p class="status">{statusLabel}</p>
 		{/if}
-		<nav aria-label="project sections">
+		<nav class="project-nav" aria-label="project sections">
 			{#each tabs as tab (tab.href)}
 				<a
 					href={tab.href}
@@ -50,56 +58,49 @@
 {/key}
 
 <style>
-	/* mobile only — the sidebar's section boxes cover this on desktop */
-	.project-nav {
-		display: none;
+	.project-header {
+		margin-bottom: 24px;
 	}
 
-	@media (max-width: 899px) {
-		.project-nav {
-			display: flex;
-			flex-direction: column;
-			gap: 10px;
-			margin-bottom: 8px;
-		}
+	.project-header h1 {
+		font-size: clamp(40px, 5vw, 64px);
+	}
 
-		.context {
-			font-size: 13px;
-			font-weight: 600;
-			color: var(--muted);
-			text-decoration: none;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
+	.status {
+		margin-top: 4px;
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--muted);
+	}
 
-		nav {
-			display: grid;
-			grid-template-columns: repeat(3, 1fr);
-			gap: 8px;
-		}
+	.project-nav {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 8px;
+		max-width: 480px;
+		margin-top: 16px;
+	}
 
-		nav a {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			min-height: 48px;
-			padding: 8px 4px;
-			border: 2px solid transparent;
-			border-radius: var(--radius);
-			background: var(--accent);
-			color: var(--on-accent);
-			text-decoration: none;
-			font-family: var(--font-display);
-			font-size: 14px;
-			letter-spacing: -0.02em;
-		}
+	.project-nav a {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 48px;
+		padding: 8px 4px;
+		border: 2px solid transparent;
+		border-radius: var(--radius);
+		background: var(--accent);
+		color: var(--on-accent);
+		text-decoration: none;
+		font-family: var(--font-display);
+		font-size: 14px;
+		letter-spacing: -0.02em;
+	}
 
-		/* units-style current state: outlined, no fill — same as the sidebar */
-		nav a[aria-current='page'] {
-			background: transparent;
-			border-color: var(--ink);
-			color: var(--ink);
-		}
+	/* units-style current state: outlined, no fill — same as the sidebar */
+	.project-nav a[aria-current='page'] {
+		background: transparent;
+		border-color: var(--ink);
+		color: var(--ink);
 	}
 </style>

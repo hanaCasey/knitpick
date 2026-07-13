@@ -2,20 +2,10 @@
 	import { page } from '$app/state';
 	import { accentVars } from '$lib/accents';
 	import type { Accent } from '$lib/db';
-	import { ACCENTS, projectList } from '$lib/queries';
+	import { projectList } from '$lib/queries';
 
 	const projects = projectList();
 	let open = $state(false);
-
-	const projectId = $derived(page.params.id);
-
-	// the project the section boxes refer to: the one being viewed,
-	// falling back to the current (or latest active) project on home
-	const displayed = $derived(
-		(projectId ? $projects?.find((p) => p.id === projectId) : undefined) ??
-			$projects?.find((p) => p.isCurrent) ??
-			$projects?.find((p) => p.status === 'active')
-	);
 
 	type Item = {
 		label: string;
@@ -26,16 +16,6 @@
 		current?: boolean;
 		outline?: boolean;
 	};
-
-	const sections: Item[] = $derived.by(() => {
-		if (!displayed) return [];
-		const others = ACCENTS.filter((a) => a !== displayed.accent);
-		return [
-			{ label: 'counters', href: `/project/${displayed.id}`, accent: displayed.accent },
-			{ label: 'pattern', href: `/project/${displayed.id}/pattern`, accent: others[0] },
-			{ label: 'notes', href: `/project/${displayed.id}/log`, accent: others[1] }
-		].map((it, i) => ({ ...it, index: String(i + 1).padStart(2, '0') }));
-	});
 
 	const projectCards: Item[] = $derived.by(() => {
 		const list = $projects ?? [];
@@ -52,11 +32,6 @@
 	});
 
 	const addCard: Item = { label: 'add project', href: '/new', index: '+', outline: true };
-
-	// the counter screen belongs to the "counters" section
-	const isActive = (href: string) =>
-		page.url.pathname === href ||
-		(!!projectId && href === `/project/${projectId}` && page.url.pathname.includes('/counter/'));
 
 	$effect(() => {
 		page.url.pathname;
@@ -96,20 +71,11 @@
 	</div>
 
 	<nav class:open>
-		{#if displayed}
-			<p class="context">{displayed.name}</p>
-			<ul class="sections">
-				{#each sections as item (item.href)}
-					<li>{@render card(item, isActive(item.href))}</li>
-				{/each}
-			</ul>
-		{/if}
-
 		<div class="projects-group">
 			{@render card(addCard, page.url.pathname === '/new')}
 			<ul class="projects">
 				{#each projectCards as item (item.href)}
-					<li>{@render card(item, false)}</li>
+					<li>{@render card(item, page.url.pathname.startsWith(item.href))}</li>
 				{/each}
 			</ul>
 		</div>
@@ -131,16 +97,6 @@
 		min-height: 44px;
 	}
 
-	.context {
-		font-size: 13px;
-		font-weight: 600;
-		color: var(--muted);
-		margin-bottom: 8px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
 	nav ul {
 		list-style: none;
 		display: flex;
@@ -155,23 +111,13 @@
 		flex-shrink: 0;
 	}
 
-	.sections {
-		margin-bottom: 16px;
-	}
-
-	/* section boxes and project cards are the same card — identical heights.
-	   a fixed height (not min-height) is what actually guarantees this once
-	   labels can be different lengths. 104px fits the tallest case (header row
-	   + a wrapped sub-label like "finished 🎉") without the content overflowing
-	   the box — measured content height tops out at 95px. */
-	.sections li,
+	/* a fixed height (not min-height) guarantees every project card is the
+	   same size even once labels/sub-labels vary in length. 104px fits the
+	   tallest case (header row + a wrapped sub-label like "finished 🎉")
+	   without the content overflowing the box — measured content height
+	   tops out at 95px. */
 	.projects li {
 		height: 104px;
-	}
-
-	.projects-group {
-		border-top: 1px solid var(--line);
-		padding-top: 16px;
 	}
 
 	.block {
@@ -268,7 +214,7 @@
 		opacity: 0.75;
 	}
 
-	/* desktop: fixed full-height column — sections pinned, projects scroll */
+	/* desktop: fixed full-height column, projects scroll below the add card */
 	@media (min-width: 900px) {
 		aside {
 			position: fixed;
@@ -343,7 +289,6 @@
 			padding: 16px;
 		}
 
-		nav.open .sections li,
 		nav.open .projects li {
 			height: 128px;
 		}
