@@ -92,8 +92,15 @@
 		letter-spacing: -0.02em;
 	}
 
+	.chip-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	.chip .arrow {
 		font-size: 14px;
+		flex-shrink: 0;
 		transition: transform 0.7s var(--ease);
 	}
 
@@ -110,5 +117,26 @@
 
 	.chip[aria-current='page'] .arrow {
 		display: none;
+	}
+
+	/* narrow screens: 4 equal columns so all cards stay on one line instead
+	   of wrapping — shrink padding/gap/font to fit "counters"/"details" */
+	@media (max-width: 480px) {
+		.section-nav {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 6px;
+		}
+
+		.chip {
+			gap: 4px;
+			padding: 8px 6px;
+			font-size: 12px;
+			justify-content: center;
+		}
+
+		.chip .arrow {
+			font-size: 11px;
+		}
 	}
 </style>
