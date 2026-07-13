@@ -24,8 +24,11 @@ photo blobs.
 
 ## Data model (Dexie tables in `src/lib/db.ts`)
 
-- `projects`: id, name, accent, status (`active | finished | frozen`), yarn/needle
-  fields, createdAt, updatedAt (bump on any activity — drives the continue card)
+- `projects`: id, name, accent, status (`active | finished | frozen`), isCurrent
+  (explicitly marked current project — at most one, always active, cleared when
+  status leaves `active`; drives the continue card and sidebar order, falling back
+  to latest-active when none is marked), yarn/needle fields, createdAt, updatedAt
+  (bump on any activity)
 - `counters`: id, projectId, label, value, isMain, createdAt, target?, linkTo?
   (repeat counter that auto-resets at target and increments the linked counter —
   target/linkTo not wired up yet). Exactly one counter per project has
@@ -39,6 +42,9 @@ photo blobs.
   yet, so `lastViewedPage` is unused)
 - `notes`: id, projectId, text, photoId?, createdAt (progress log: notes and photos
   interleave on one timeline — photo attachment via `photoId` not wired up yet)
+- `colors`: id, hex, createdAt — user-added accent colours shown as swatches in
+  the colour picker. A project's `accent` is a preset name from
+  `src/lib/accents.ts` or a raw `#rrggbb` from this table.
 
 Schema changes go through Dexie versioned migrations — never mutate a version
 in place once committed.

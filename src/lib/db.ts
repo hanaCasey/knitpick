@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 
-export type Accent = 'red' | 'pink' | 'orange';
+// a preset name from src/lib/accents.ts, or a raw '#rrggbb' the user added
+export type Accent = string;
 export type ProjectStatus = 'active' | 'finished' | 'frozen';
 
 export interface Project {
@@ -8,10 +9,11 @@ export interface Project {
 	name: string;
 	accent: Accent;
 	status: ProjectStatus;
+	isCurrent: boolean; // at most one, always active — drives the continue card + sidebar order
 	yarn: string;
 	needles: string;
 	createdAt: number;
-	updatedAt: number; // bumped on any activity — drives the continue card
+	updatedAt: number; // bumped on any activity
 }
 
 export interface Counter {
@@ -50,12 +52,19 @@ export interface Note {
 	createdAt: number;
 }
 
+export interface CustomColor {
+	id: string;
+	hex: string;
+	createdAt: number;
+}
+
 export const db = new Dexie('knitpick') as Dexie & {
 	projects: EntityTable<Project, 'id'>;
 	counters: EntityTable<Counter, 'id'>;
 	counterEvents: EntityTable<CounterEvent, 'id'>;
 	files: EntityTable<FileEntry, 'id'>;
 	notes: EntityTable<Note, 'id'>;
+	colors: EntityTable<CustomColor, 'id'>;
 };
 
 db.version(1).stores({
@@ -82,3 +91,42 @@ db.version(2)
 				c.createdAt ??= Date.now();
 			});
 	});
+
+// palette swap: pink and orange retired, remap to their nearest new accent
+db.version(3).upgrade(async (tx) => {
+	const remap: Record<string, string> = { pink: 'purple', orange: 'amber' };
+	await tx
+		.table('projects')
+		.toCollection()
+		.modify((p) => {
+			if (p.accent in remap) p.accent = remap[p.accent];
+		});
+});
+
+// palette rework: candy pairs (red/pink, green/blush) — amber, teal, purple retired
+db.version(4).upgrade(async (tx) => {
+	const remap: Record<string, Accent> = { amber: 'blush', teal: 'green', purple: 'pink' };
+	await tx
+		.table('projects')
+		.toCollection()
+		.modify((p) => {
+			if (p.accent in remap) p.accent = remap[p.accent];
+		});
+});
+
+// explicit current project — seeded from the previously implicit rule (latest active)
+db.version(5).upgrade(async (tx) => {
+	const projects = await tx.table('projects').toArray();
+	const current = projects
+		.filter((p) => p.status === 'active')
+		.sort((a, b) => b.updatedAt - a.updatedAt)[0];
+	await tx
+		.table('projects')
+		.toCollection()
+		.modify((p) => {
+			p.isCurrent = p.id === current?.id;
+		});
+});
+
+// user-added accent colors
+db.version(6).stores({ colors: 'id, createdAt' });
