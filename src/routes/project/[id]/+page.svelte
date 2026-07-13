@@ -6,6 +6,7 @@
 		createCounter,
 		deleteCounter,
 		projectById,
+		setCurrentProject,
 		setMainCounter
 	} from '$lib/queries';
 
@@ -27,6 +28,12 @@
 </script>
 
 {#if $project}
+	{#if $project.status === 'active' && !$project.isCurrent}
+		<button class="btn make-current" onclick={() => setCurrentProject(page.params.id!)}
+			>make current project</button
+		>
+	{/if}
+
 	<section class="counters">
 		{#if mainCounter}
 			<a
@@ -66,12 +73,6 @@
 
 		<button class="btn" onclick={addCounter}>add counter</button>
 	</section>
-
-	<nav class="hub-links">
-		<a class="btn ghost" href="/project/{page.params.id}/pattern">pattern</a>
-		<a class="btn ghost" href="/project/{page.params.id}/log">notes</a>
-		<a class="btn ghost" href="/project/{page.params.id}/edit">edit details</a>
-	</nav>
 {/if}
 
 <style>
@@ -182,9 +183,8 @@
 		color: var(--red);
 	}
 
-	.hub-links {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
+	.make-current {
+		max-width: 320px;
+		margin-bottom: 24px;
 	}
 </style>

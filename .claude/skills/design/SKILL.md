@@ -95,23 +95,27 @@ Counter digits: display font, huge (96px+), `font-variant-numeric: tabular-nums`
   sidebar width, generous horizontal padding, up to ~1200px wide. Pages use the
   width (e.g. project overview is a two-column grid); text-heavy runs cap at ~720px.
 - **Mobile (<900px)**: sidebar becomes a top bar (wordmark + hamburger) opening a
-  fullscreen overlay of the same nav cards, ~96px tall each. Project pages
-  additionally get a compact **section-tab row** (counters / pattern / notes,
-  in `project/[id]/+layout.svelte`) mirroring the sidebar's section boxes —
-  same accents, active tab outlined — so switching sections never needs the
-  hamburger. Sub-pages show a muted project-name link above the tabs (back to
-  the overview); the counter screen stays full-bleed with its own back link.
+  fullscreen overlay of the same nav cards, ~96px tall each.
 - **Nav cards** (`Sidebar.svelte`): solid accent blocks with a two-digit index
-  top-left, arrow top-right, display-font label bottom. The sidebar always shows
-  **both groups**: on top, the viewed project's name and its three section boxes
-  (01 counters / 02 pattern / 03 notes — on home these belong to the current
-  project); below a hairline divider, the outlined "add project" card pinned,
-  then a **scrollable** list of projects with the current one first.
-  The current page's section box is **outlined, not filled** (transparent bg, 2px
-  ink border) — units.gr's active state. The **current project's** card is
-  outlined in its own accent instead (ink text, no sub-label). On hover a card's
-  text swaps colour (`--on-accent-hover`: white ↔ ink on filled cards; outlined
-  cards shift to an accent) and the arrow rotates.
+  top-left, arrow top-right, display-font label bottom. The sidebar holds the
+  outlined "add project" card pinned at top, then a **scrollable** list of every
+  project with the current one first. The page you're currently viewing has its
+  card **outlined, not filled** (transparent bg, 2px ink border) — units.gr's
+  active state; the **current project's** card is outlined in its own accent
+  instead (ink text, no sub-label) even when you're not viewing it. On hover a
+  card's text swaps colour (`--on-accent-hover`: white ↔ ink on filled cards;
+  outlined cards shift to an accent) and the arrow rotates. The sidebar no
+  longer shows per-project section links — that nav lives on the project page
+  itself (see **Project page nav** below).
+- **Project page nav** (`project/[id]/+layout.svelte`): every project page —
+  counters, pattern, notes, details — shows the same header: the project name
+  as an `<h1>`, a status line if any (`finished 🎉` / `frozen` / `current
+  project`), then 4 small black nav cards (`--ink` fill, white text, →
+  arrow) linking to counters / pattern / notes / details. The one you're
+  already on is outlined instead of filled and drops its arrow — same
+  filled-vs-outlined active convention as the sidebar's nav cards, just
+  smaller. The counter screen is the one exception: it stays full-bleed with
+  no shared header, using its own back link instead.
 
 ## Components
 
@@ -135,10 +139,12 @@ Counter digits: display font, huge (96px+), `font-variant-numeric: tabular-nums`
   (`--red`). Low-emphasis actions use a ghost button (ink text, no border).
 - **Counter screen**: accent-colored full-bleed increment area; undo/decrement as a
   small ghost control — mis-taps must be cheap, so undo sits away from increment.
-- **Project overview**: main counter as the accent block, secondary counters as
-  small outlined cards in an auto-fill grid; the edit form and status/delete
-  actions hide behind a ghost "edit details" toggle so the counters stay front
-  and center.
+- **Project overview**: a prominent solid "make current project" button (only
+  shown when the project isn't already current) sits above everything else;
+  then the main counter as the accent block, secondary counters as small
+  outlined cards in an auto-fill grid. Editing (name/yarn/needles/colour,
+  status, delete) lives on its own `project/[id]/edit` page, reached via the
+  "details" nav card — not inline on the overview.
 - **Outlined card** is the second card grammar next to filled accent blocks:
   transparent on cream, 2px ink border, 10px radius — used for panels, stat
   tiles, secondary counters, and the sidebar's add/active states.
