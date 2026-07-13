@@ -1,22 +1,26 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
-	import { fileByProject, projectById, removePatternPdf, setPatternPdf } from '$lib/queries';
+	import PdfViewer from '$lib/components/PdfViewer.svelte';
+	import {
+		fileByProject,
+		projectById,
+		removePatternPdf,
+		setLastViewedPage,
+		setPatternPdf
+	} from '$lib/queries';
 
 	const projectId = page.params.id!;
 	const project = projectById(projectId);
 	const file = fileByProject(projectId, 'pdf');
 
-	let url = $state<string | null>(null);
-
+	// snapshot keyed on file id so lastViewedPage writes (which re-emit $file with a
+	// fresh blob instance) don't remount the viewer; a replaced pdf gets a new id
+	let viewer = $state<{ id: string; blob: Blob; initialPage: number } | null>(null);
 	$effect(() => {
-		const blob = $file?.blob;
-		if (!blob) {
-			url = null;
-			return;
-		}
-		const objectUrl = URL.createObjectURL(blob);
-		url = objectUrl;
-		return () => URL.revokeObjectURL(objectUrl);
+		const f = $file;
+		if (untrack(() => viewer)?.id === f?.id) return;
+		viewer = f ? { id: f.id, blob: f.blob, initialPage: f.lastViewedPage ?? 1 } : null;
 	});
 
 	async function upload(event: Event) {
@@ -35,8 +39,13 @@
 </script>
 
 {#if $project}
-	{#if url}
-		<iframe class="viewer" src={url} title="pattern pdf"></iframe>
+	{#if viewer}
+		{@const v = viewer}
+		<PdfViewer
+			blob={v.blob}
+			initialPage={v.initialPage}
+			onpagechange={(p) => setLastViewedPage(v.id, p)}
+		/>
 		<div class="actions">
 			<label class="btn ghost file">
 				replace pdf
@@ -54,15 +63,6 @@
 {/if}
 
 <style>
-	.viewer {
-		width: 100%;
-		height: 75vh;
-		height: 75dvh; /* mobile browser chrome shrinks vh */
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-		margin-bottom: 16px;
-	}
-
 	.empty {
 		color: var(--muted);
 		padding: 32px 0 24px;

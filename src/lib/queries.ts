@@ -221,17 +221,19 @@ export async function setPatternPdf(projectId: string, blob: Blob) {
 			.equals(projectId)
 			.and((f) => f.kind === 'pdf')
 			.first();
-		if (existing) {
-			await db.files.update(existing.id, { blob });
-		} else {
-			await db.files.add({ id: crypto.randomUUID(), projectId, kind: 'pdf', blob });
-		}
+		// replace = new record (new id): the id doubles as a content key, so viewers
+		// reload on a new pdf but not on metadata updates like lastViewedPage
+		if (existing) await db.files.delete(existing.id);
+		await db.files.add({ id: crypto.randomUUID(), projectId, kind: 'pdf', blob });
 	});
 }
 
 export async function removePatternPdf(fileId: string) {
 	await db.files.delete(fileId);
 }
+
+export const setLastViewedPage = (fileId: string, page: number) =>
+	db.files.update(fileId, { lastViewedPage: page });
 
 // notes
 

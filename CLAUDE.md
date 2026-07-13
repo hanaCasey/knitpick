@@ -28,8 +28,8 @@ static site (GitHub Pages). No server, ever.
 2. 🟡 Row counter — spawn/name/delete counters, one main + list, tap-to-count
    screen, timestamped log. Still missing: Wake Lock, linked repeat counters
    (target/linkTo).
-3. 🟡 PDF pattern viewer — upload/replace/remove, inline view via `<iframe>` blob
-   URL. Still missing: pdf.js, remember last page.
+3. ✅ PDF pattern viewer — upload/replace/remove, pdf.js canvas viewer (mobile-safe,
+   offline worker) with zoom, tracks and restores last viewed page.
 4. 🟡 Progress log — timestamped text notes. Still missing: photo attachments
    (compression, thumbnails).
 5. 🟡 PWA — manifest, icons, offline service worker, persistent storage request.
