@@ -161,10 +161,12 @@
 
 	/* section boxes and project cards are the same card — identical heights.
 	   a fixed height (not min-height) is what actually guarantees this once
-	   labels can be different lengths. */
+	   labels can be different lengths. 104px fits the tallest case (header row
+	   + a wrapped sub-label like "finished 🎉") without the content overflowing
+	   the box — measured content height tops out at 95px. */
 	.sections li,
 	.projects li {
-		height: 64px;
+		height: 104px;
 	}
 
 	.projects-group {
@@ -218,7 +220,7 @@
 	}
 
 	.projects-group > :global(.block) {
-		height: 64px;
+		height: 104px;
 		flex-shrink: 0;
 		margin-bottom: 10px;
 	}
@@ -343,7 +345,7 @@
 
 		nav.open .sections li,
 		nav.open .projects li {
-			height: 88px;
+			height: 128px;
 		}
 	}
 </style>
